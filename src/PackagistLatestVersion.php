@@ -4,6 +4,8 @@ namespace ahinkle\PackagistLatestVersion;
 
 use Exception;
 use GuzzleHttp\Client;
+use Spatie\Packagist\PackagistClient;
+use Spatie\Packagist\PackagistUrlGenerator;
 
 class PackagistLatestVersion
 {
@@ -17,7 +19,7 @@ class PackagistLatestVersion
     /**
      * The Packagist API.
      *
-     * @var \Spatie\Packagist\Packagist
+     * @var \Spatie\Packagist\Packagist|PackagistClient
      */
     protected $packagist;
 
@@ -53,7 +55,11 @@ class PackagistLatestVersion
     {
         $this->client = $client;
 
-        $this->packagist = new \Spatie\Packagist\Packagist($client, $baseUrl);
+        if (class_exists(PackagistClient::class)) {
+            $this->packagist = new PackagistClient($client, new PackagistUrlGenerator($baseUrl));
+        } else {
+            $this->packagist = \Spatie\Packagist\Packagist($client, $baseUrl);
+        }
     }
 
     /**
