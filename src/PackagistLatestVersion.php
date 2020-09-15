@@ -24,13 +24,6 @@ class PackagistLatestVersion
     protected $packagist;
 
     /**
-     * The latest version of the package.
-     *
-     * @var string|null
-     */
-    protected $latestVersion = null;
-
-    /**
      * Release tags that are considered `developmental` releases.
      *
      * @var array
@@ -75,13 +68,13 @@ class PackagistLatestVersion
             throw new Exception('You must pass a package value');
         }
 
-        $package = $this->packagist->getPackageMetaData($package);
+        $metadata = $this->packagist->getPackageMetaData($package);
 
-        if (! isset($package['package']['versions'])) {
+        if (! isset($metadata['packages'][$package])) {
             return;
         }
 
-        return $this->resolveLatestRelease($package['package']['versions']);
+        return $this->resolveLatestRelease($metadata['packages'][$package]);
     }
 
     /**
@@ -96,21 +89,23 @@ class PackagistLatestVersion
             return;
         }
 
+        $latestVersion = null;
+
         foreach ($releases as $release) {
             if ($this->isDevelopmentalRelease($release['version_normalized'])) {
                 continue;
             }
 
-            if ($this->latestVersion) {
-                if (version_compare($release['version_normalized'], $this->latestVersion['version_normalized'], '>')) {
-                    $this->latestVersion = $release;
+            if ($latestVersion) {
+                if (version_compare($release['version_normalized'], $latestVersion['version_normalized'], '>')) {
+                    $latestVersion = $release;
                 }
             } else {
-                $this->latestVersion = $release;
+                $latestVersion = $release;
             }
         }
 
-        return $this->latestVersion;
+        return $latestVersion;
     }
 
     /**
